@@ -1,0 +1,16 @@
+:root {
+  background-color: #050505; /* Fondo oscuro y pesado */
+  color: #00ffcc; /* Un cyan saturado para contrastar */
+  font-family: 'Courier New', Courier, monospace; /* Vibra retro-tech */
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+}
