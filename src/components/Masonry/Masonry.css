@@ -1,0 +1,36 @@
+.masonry-grid {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.masonry-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.masonry-item {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  will-change: opacity, transform;
+}
+
+.masonry-item__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease;
+}
+
+.masonry-item__img--hoverable {
+  cursor: pointer;
+}
+
+.masonry-item__img--hoverable:hover {
+  transform: scale(var(--hover-scale, 0.97));
+}

@@ -10,6 +10,7 @@ import menuExpImg from '../../assets/img_telefono/menu_exp.png';
 import menuSobreMiImg from '../../assets/img_telefono/menu_sobre mi.png';
 import ParagraphMaskAnim from './ParagraphMaskAnim';
 import ParagraphMotion from './ParagraphMotion';
+import ProjectPreview from '../ProjectPreview/ProjectPreview';
 
 const CONTENT_REVEAL_DELAY_MS = 900;
 
@@ -63,19 +64,32 @@ const menuScreens = [
     alt: 'Telefono morado mostrando el menu con Estudios seleccionado',
     title: 'Estudios',
     paragraphs: [
-      'Mi formacion en diseno multimedia me dio una base fuerte en composicion, comunicacion visual y narrativa digital.',
-      'La complemento con practica constante en desarrollo web para seguir ampliando mi perfil creativo y tecnico.',
+      'En mi carrera como Diseñadora Multimeida aprendí a conceptualizar y crear identidades de marca desde cero, aplicando diseño gráfico y retoque digital avanzado. Edición de video, motion graphics, modelado y animación 3D y creación de entornos para videojuegos. Programación, gestión de bases de datos, UX/UI y Marketing Digital.',
     ],
   },
 ];
 
-const Main = () => {
+export default function Main() {
   const sectionRef = useRef(null);
   const parallaxRef = useRef(null);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const isMagicRingsDimmed = isContentVisible;
+
+  const categories = [
+    { id: 'diseno-grafico', label: 'Diseño Gráfico' },
+    { id: 'programacion', label: 'Programación' },
+    { id: '3d', label: '3D' },
+  ];
+
+  const categoryDescriptions = {
+    'diseno-grafico': 'Creo identidades visuales, piezas gráficas y sistemas de diseño que comunican con precisión y generan impacto inmediato.',
+    'programacion': 'Trabajo de forma híbrida entre el diseño y el desarrollo para generar piezas visuales magnéticas y comunicadores potentes.',
+    '3d': 'Modelo y animo entornos y objetos 3D que llevan las ideas al siguiente nivel, desde renders hasta assets para videojuegos.',
+  };
+
+  const [activeCategory, setActiveCategory] = useState('programacion');
 
   const currentScreen =
     selectedMenuIndex === null
@@ -209,7 +223,7 @@ const Main = () => {
   };
 
   return (
-    <main>
+    <div className="main-container">
       <section ref={sectionRef} className="intro-section" aria-label="Introduccion del portfolio">
         <div
           className={`intro-section__rings${isMagicRingsDimmed ? ' intro-section__rings--dimmed' : ''}`}
@@ -284,7 +298,7 @@ const Main = () => {
               aria-live={isContentVisible ? 'polite' : undefined}
               aria-hidden={isContentVisible ? undefined : true}
             >
-              {isContentVisible && currentContent.id !== 'experiencia' && (currentContent.titleImage ? (
+              {isContentVisible && currentContent.id !== 'experiencia' && currentContent.id !== 'estudios' && (currentContent.titleImage ? (
                 <img
                   key={`${currentContent.id}-title-image`}
                   className="intro-section__title-image"
@@ -315,9 +329,14 @@ const Main = () => {
                     {currentContent.id === 'experiencia' ? (
                       <div className="custom-timeline custom-timeline--animate">
                         {timelineData.map((item, index) => (
-                          <div className="custom-timeline__item custom-timeline__item--fadein" style={{ animationDelay: `${0.2 + index * 0.18}s` }} key={index}>
+                          <div className="custom-timeline__item" key={index}>
                             <div className="custom-timeline__marker">
-                              <svg className={`custom-timeline__ring ${item.glow ? 'custom-timeline__ring--glow' : ''}`} viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                              <svg
+                                className={`custom-timeline__ring custom-timeline__ring--animated ${item.glow ? 'custom-timeline__ring--glow' : ''}`}
+                                style={{ animationDelay: `${0.1 + index * 0.5}s` }}
+                                viewBox="0 0 14 14"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
                                 <rect x="4" y="0" width="6" height="2" fill="currentColor"/>
                                 <rect x="2" y="2" width="2" height="2" fill="currentColor"/>
                                 <rect x="10" y="2" width="2" height="2" fill="currentColor"/>
@@ -327,15 +346,67 @@ const Main = () => {
                                 <rect x="10" y="10" width="2" height="2" fill="currentColor"/>
                                 <rect x="4" y="12" width="6" height="2" fill="currentColor"/>
                               </svg>
-                              {index !== timelineData.length - 1 && <div className="custom-timeline__line" />}
+                              {index !== timelineData.length - 1 && (
+                                <div
+                                  className="custom-timeline__line custom-timeline__line--animated"
+                                  style={{ animationDelay: `${0.3 + index * 0.5}s` }}
+                                />
+                              )}
                             </div>
-                            <div className="custom-timeline__content">
-                              <h3 className="custom-timeline__title">{item.title}</h3>
+                            <div
+                              className="custom-timeline__content custom-timeline__content--animated"
+                              style={{ animationDelay: `${0.3 + index * 0.5}s` }}
+                            >
+                              <h3 className="custom-timeline__title neon-text">{item.title}</h3>
                               <h4 className="custom-timeline__subtitle">{item.subtitle}</h4>
                               <p className="custom-timeline__desc">{item.description}</p>
                             </div>
                           </div>
                         ))}
+                      </div>
+                    ) : currentContent.id === 'estudios' ? (
+                      <div className="estudios-layout">
+                        <div className="estudios-description">
+                          <SplitText
+                            className="intro-section__paragraph"
+                            text={currentContent.paragraphs[0]}
+                            delay={12}
+                            duration={0.9}
+                            ease="power2.out"
+                            splitType="words"
+                            from={{ opacity: 0, y: 18 }}
+                            to={{ opacity: 1, y: 0 }}
+                            threshold={0}
+                            rootMargin="0px"
+                            textAlign="left"
+                            whiteSpace="normal"
+                            tag="p"
+                          />
+                        </div>
+                        <div className="estudios-columns estudios-columns--separated">
+                          <div className="estudios-col">
+                            <h3 className="custom-timeline__title estudios-col-title">PROGRAMAS</h3>
+                            <ul className="estudios-list">
+                              <li>Adobe Photoshop</li>
+                              <li>Adobe Illustrator</li>
+                              <li>Adobe After Effects</li>
+                              <li>Adobe Premiere</li>
+                              <li>Figma</li>
+                              <li>Blender</li>
+                            </ul>
+                          </div>
+                          <div className="estudios-col">
+                            <h3 className="custom-timeline__title estudios-col-title">LENGUAJES Y FRAMEWORKS</h3>
+                            <ul className="estudios-list">
+                              <li>HTML</li>
+                              <li>CSS</li>
+                              <li>JavaScript</li>
+                              <li>React</li>
+                              <li>PHP</li>
+                              <li>MySQL</li>
+                            </ul>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       currentContent.paragraphs.map((paragraph, index) => {
@@ -386,8 +457,34 @@ const Main = () => {
           )}
         </div>
       </section>
-    </main>
+      <section className="category-filter-section" aria-label="Filtro de categorías">
+        <div className="category-filter__tabs">
+          {categories.map((cat, index) => (
+            <>
+              {index > 0 && (
+                <span key={`sep-${cat.id}`} className="category-filter__separator" aria-hidden="true">•</span>
+              )}
+              <button
+                key={cat.id}
+                type="button"
+                className={`category-filter__tab${activeCategory === cat.id ? ' category-filter__tab--active' : ''}`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                {cat.label}
+              </button>
+            </>
+          ))}
+        </div>
+        <div className="category-filter__text">
+          <p className="category-filter__description">
+            {categoryDescriptions[activeCategory]}
+          </p>
+          <p className="category-filter__tagline">
+            Si el proyecto no genera una reacción inmediata, no es suficiente.
+          </p>
+        </div>
+      </section>
+      <ProjectPreview />
+    </div>
   );
-};
-
-export default Main;
+}

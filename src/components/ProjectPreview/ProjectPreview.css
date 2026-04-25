@@ -1,0 +1,82 @@
+.project-preview-section {
+  width: 100%;
+  background-color: #181626;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  padding: 0 clamp(20px, 5vw, 64px) clamp(40px, 6vw, 80px);
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Fade desde #181626 encima de la imagen */
+.project-preview-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    #181626 0%,
+    transparent 12%,
+    transparent 72%,
+    #181626 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Masonry por encima del overlay */
+.project-preview-section > * {
+  position: relative;
+  z-index: 2;
+}
+
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 250px);
+  gap: 0;
+  border-top: 5px solid #181818;
+  border-left: 5px solid #181818;
+}
+
+.project-card {
+  background: #fff;
+  border-right: 5px solid #181818;
+  border-bottom: 5px solid #181818;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 16px 0;
+  height: 100%;
+}
+
+.project-title-placeholder {
+  width: 70%;
+  height: 40px;
+  background: #181818;
+  border-radius: 24px;
+  margin-bottom: 24px;
+}
+
+.project-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.project-btn-placeholder {
+  width: 48px;
+  height: 40px;
+  background: #181818;
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .project-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, 180px);
+  }
+}
