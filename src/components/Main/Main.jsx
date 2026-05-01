@@ -1,5 +1,21 @@
 import './Main.css';
 import { useEffect, useRef, useState } from 'react';
+import {
+  SiBlender,
+  SiCss,
+  SiFigma,
+  SiHtml5,
+  SiJavascript,
+  SiMysql,
+  SiPhp,
+  SiReact,
+} from 'react-icons/si';
+import {
+  TbBrandAdobeAfterEffect,
+  TbBrandAdobeIllustrator,
+  TbBrandAdobePhotoshop,
+  TbBrandAdobePremier,
+} from 'react-icons/tb';
 import SplitText from '../SplitText/SplitText';
 import MagicRings from '../MagicRings/MagicRings';
 import holaImg from '../../assets/img_main/hola.webp';
@@ -67,6 +83,24 @@ const menuScreens = [
       'En mi carrera como Diseñadora Multimeida aprendí a conceptualizar y crear identidades de marca desde cero, aplicando diseño gráfico y retoque digital avanzado. Edición de video, motion graphics, modelado y animación 3D y creación de entornos para videojuegos. Programación, gestión de bases de datos, UX/UI y Marketing Digital.',
     ],
   },
+];
+
+const studiesPrograms = [
+  { label: 'Adobe Photoshop', Icon: TbBrandAdobePhotoshop },
+  { label: 'Adobe Illustrator', Icon: TbBrandAdobeIllustrator },
+  { label: 'Adobe After Effects', Icon: TbBrandAdobeAfterEffect },
+  { label: 'Adobe Premiere', Icon: TbBrandAdobePremier },
+  { label: 'Figma', Icon: SiFigma },
+  { label: 'Blender', Icon: SiBlender },
+];
+
+const studiesFrameworks = [
+  { label: 'HTML', Icon: SiHtml5 },
+  { label: 'CSS', Icon: SiCss },
+  { label: 'JavaScript', Icon: SiJavascript },
+  { label: 'React', Icon: SiReact },
+  { label: 'PHP', Icon: SiPhp },
+  { label: 'MySQL', Icon: SiMysql },
 ];
 
 export default function Main() {
@@ -387,23 +421,27 @@ export default function Main() {
                           <div className="estudios-col">
                             <h3 className="custom-timeline__title estudios-col-title">PROGRAMAS</h3>
                             <ul className="estudios-list">
-                              <li>Adobe Photoshop</li>
-                              <li>Adobe Illustrator</li>
-                              <li>Adobe After Effects</li>
-                              <li>Adobe Premiere</li>
-                              <li>Figma</li>
-                              <li>Blender</li>
+                              {studiesPrograms.map(({ label, Icon }) => (
+                                <li key={label} className="estudios-list__item" aria-label={label} title={label}>
+                                  <span className="estudios-list__icon" aria-hidden="true">
+                                    <Icon />
+                                  </span>
+                                  <span className="estudios-list__label">{label}</span>
+                                </li>
+                              ))}
                             </ul>
                           </div>
                           <div className="estudios-col">
-                            <h3 className="custom-timeline__title estudios-col-title">LENGUAJES Y FRAMEWORKS</h3>
+                            <h3 className="custom-timeline__title estudios-col-title">LENGUAJES</h3>
                             <ul className="estudios-list">
-                              <li>HTML</li>
-                              <li>CSS</li>
-                              <li>JavaScript</li>
-                              <li>React</li>
-                              <li>PHP</li>
-                              <li>MySQL</li>
+                              {studiesFrameworks.map(({ label, Icon }) => (
+                                <li key={label} className="estudios-list__item" aria-label={label} title={label}>
+                                  <span className="estudios-list__icon" aria-hidden="true">
+                                    <Icon />
+                                  </span>
+                                  <span className="estudios-list__label">{label}</span>
+                                </li>
+                              ))}
                             </ul>
                           </div>
                         </div>

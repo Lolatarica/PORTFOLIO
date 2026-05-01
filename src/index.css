@@ -4,11 +4,18 @@
   font-family: 'Courier New', Courier, monospace; /* Vibra retro-tech */
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #root {
