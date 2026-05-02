@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Icon } from '@iconify/react';
+import Lightbox from './Lightbox';
 import './Masonry.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -17,6 +19,13 @@ export default function Masonry({
   blurToFocus = true,
 }) {
   const containerRef = useRef(null);
+  const [lightbox, setLightbox] = useState(null);
+
+  const handleItemClick = (e, item) => {
+    const img = e.currentTarget.querySelector('img');
+    if (!img) return;
+    setLightbox({ src: item.img, alt: item.alt, name: item.name, tools: item.tools, originRect: img.getBoundingClientRect() });
+  };
 
   // Distribute items across columns
   const columnArrays = Array.from({ length: columns }, () => []);
@@ -68,7 +77,7 @@ export default function Masonry({
       scrollTrigger: {
         trigger: container,
         start: 'top 85%',
-        once: true,
+        toggleActions: 'play reverse play reverse',
       },
     });
 
@@ -80,29 +89,56 @@ export default function Masonry({
   }, [items]);
 
   return (
-    <div
-      ref={containerRef}
-      className="masonry-grid"
-      style={{ '--masonry-columns': columns }}
-    >
-      {columnArrays.map((col, colIdx) => (
-        <div className="masonry-column" key={colIdx}>
-          {col.map((item) => (
-            <div
-              className="masonry-item"
-              key={item.id}
-              style={scaleOnHover ? { '--hover-scale': hoverScale } : {}}
-            >
-              <img
-                src={item.img}
-                alt={item.alt ?? ''}
-                className={`masonry-item__img${scaleOnHover ? ' masonry-item__img--hoverable' : ''}`}
-                loading="lazy"
-              />
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
+    <>
+      <div
+        ref={containerRef}
+        className="masonry-grid"
+        style={{ '--masonry-columns': columns }}
+      >
+        {columnArrays.map((col, colIdx) => (
+          <div className="masonry-column" key={colIdx}>
+            {col.map((item) => (
+              <div
+                className="masonry-item"
+                key={item.id}
+                style={scaleOnHover ? { '--hover-scale': hoverScale } : {}}
+                onClick={(e) => handleItemClick(e, item)}
+              >
+                <div className="masonry-item__clip">
+                  <img
+                    src={item.img}
+                    alt={item.alt ?? ''}
+                    className="masonry-item__img"
+                    loading="lazy"
+                  />
+                  <div className="masonry-item__overlay">
+                    {item.name && (
+                      <span className="masonry-item__overlay-name">{item.name}</span>
+                    )}
+                    {item.tools && item.tools.length > 0 && (
+                      <div className="masonry-item__overlay-icons">
+                        {item.tools.map((iconName, i) => (
+                          <Icon key={i} icon={iconName} className="masonry-item__overlay-icon" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {lightbox && (
+        <Lightbox
+          src={lightbox.src}
+          alt={lightbox.alt}
+          name={lightbox.name}
+          tools={lightbox.tools}
+          originRect={lightbox.originRect}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+    </>
   );
 }

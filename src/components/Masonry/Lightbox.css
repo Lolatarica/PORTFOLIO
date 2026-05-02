@@ -1,0 +1,113 @@
+@import url('https://fonts.cdnfonts.com/css/coolvetica-2');
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.88);
+  opacity: 0;
+  z-index: 9998;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.lightbox-img {
+  position: fixed;
+  object-fit: cover;
+  will-change: left, top, width, height;
+  cursor: default;
+  pointer-events: auto;
+  display: block;
+  z-index: 9999;
+}
+
+/* Card pegada al borde inferior de la imagen */
+.lightbox-card {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(14, 12, 28, 0.88);
+  backdrop-filter: blur(14px);
+  border-radius: 0 0 10px 10px;
+  pointer-events: auto;
+  cursor: default;
+  box-sizing: border-box;
+  z-index: 10000;
+  gap: 16px;
+}
+
+.lightbox-card__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.lightbox-card__name {
+  color: #fff;
+  font-family: 'Coolvetica', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lightbox-card__icons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.lightbox-card__icon {
+  width: 24px;
+  height: 24px;
+}
+
+.lightbox-card__btn {
+  flex-shrink: 0;
+  position: relative;
+  padding: 8px 22px 7px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff 0%, #fff8ff 100%);
+  color: #2f294a;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.8;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(8, 5, 22, 0.18), 0 0 0 1px rgba(255,255,255,0.7), 0 0 22px rgba(255,255,255,0.24);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  white-space: nowrap;
+}
+
+.lightbox-card__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(8,5,22,0.24), 0 0 0 1px rgba(255,255,255,0.95), 0 0 34px rgba(255,255,255,0.42), 0 0 58px rgba(255,212,248,0.24);
+  filter: brightness(1.03);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  padding: 8px 12px;
+  cursor: pointer;
+  z-index: 10000;
+  opacity: 0;
+  transition: color 0.2s;
+}
+
+.lightbox-close:hover {
+  color: #aaa;
+}

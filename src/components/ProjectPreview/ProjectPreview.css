@@ -1,4 +1,6 @@
 .project-preview-section {
+  --projects-reveal-y: 0px;
+  --projects-reveal-opacity: 1;
   width: 100%;
   background-color: #181626;
   background-size: cover;
@@ -9,17 +11,30 @@
   position: relative;
 }
 
-/* Fade desde #181626 encima de la imagen */
+/* Capa oscura base para mantener contraste sobre la imagen */
 .project-preview-section::before {
   content: '';
   position: absolute;
   inset: 0;
+  background: rgba(24, 22, 38, 0.56);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Fade superior de conexion con el fondo anterior */
+.project-preview-section::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: clamp(160px, 20vh, 300px);
   background: linear-gradient(
     to bottom,
     #181626 0%,
-    transparent 12%,
-    transparent 72%,
-    #181626 100%
+    rgba(24, 22, 38, 0.85) 28%,
+    rgba(24, 22, 38, 0.45) 62%,
+    rgba(24, 22, 38, 0) 100%
   );
   pointer-events: none;
   z-index: 1;
@@ -29,6 +44,116 @@
 .project-preview-section > * {
   position: relative;
   z-index: 2;
+}
+
+.project-preview-section__parallax {
+  opacity: var(--projects-reveal-opacity);
+  transform: translateY(var(--projects-reveal-y));
+  will-change: transform, opacity;
+}
+
+.project-preview-section[data-active-category='diseno-grafico'] .project-preview-section__parallax {
+  filter: saturate(1.06);
+}
+
+.project-preview-section[data-active-category='3d'] .project-preview-section__parallax {
+  filter: contrast(1.04) saturate(1.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-preview-section__parallax {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.category-filter-section {
+  padding: clamp(48px, 2vw, 96px) 0 clamp(20px, 2.5vw, 36px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(24px, 3vw, 40px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.category-filter__tabs {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 40px);
+}
+
+.category-filter__separator {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: clamp(1rem, 1.2vw, 1.3rem);
+  user-select: none;
+}
+
+.category-filter__tab {
+  position: relative;
+  min-width: clamp(130px, 15vw, 180px);
+  padding: 10px 18px 9px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  font-size: clamp(1rem, 1.1vw, 1.1rem);
+  font-weight: 400;
+  line-height: 2;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, filter 0.25s ease, background 0.25s ease;
+  letter-spacing: 0.01em;
+}
+
+.category-filter__tab--active {
+  background: linear-gradient(180deg, #ffffff 0%, #fff8ff 100%);
+  color: #2f294a;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(8, 5, 22, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.7), 0 0 22px rgba(255, 255, 255, 0.24);
+}
+
+.category-filter__tab--active:hover,
+.category-filter__tab--active:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(8, 5, 22, 0.24), 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 34px rgba(255, 255, 255, 0.42), 0 0 58px rgba(255, 212, 248, 0.24);
+  filter: brightness(1.03);
+}
+
+.category-filter__tab:not(.category-filter__tab--active):hover {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.category-filter__tab:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.category-filter__text {
+  text-align: center;
+  width: min(100%, 760px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2vw, 22px);
+}
+
+.category-filter__description {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.category-filter__tagline {
+  margin: 0;
+  color: #fff;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+  font-style: italic;
+  font-weight: 700;
 }
 
 

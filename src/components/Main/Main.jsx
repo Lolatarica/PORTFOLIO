@@ -1,21 +1,6 @@
 import './Main.css';
 import { useEffect, useRef, useState } from 'react';
-import {
-  SiBlender,
-  SiCss,
-  SiFigma,
-  SiHtml5,
-  SiJavascript,
-  SiMysql,
-  SiPhp,
-  SiReact,
-} from 'react-icons/si';
-import {
-  TbBrandAdobeAfterEffect,
-  TbBrandAdobeIllustrator,
-  TbBrandAdobePhotoshop,
-  TbBrandAdobePremier,
-} from 'react-icons/tb';
+import { Icon } from '@iconify/react';
 import SplitText from '../SplitText/SplitText';
 import MagicRings from '../MagicRings/MagicRings';
 import holaImg from '../../assets/img_main/hola.webp';
@@ -23,32 +8,36 @@ import decorLoopsImg from '../../assets/img_main/obj2.webp';
 import inicioSinClicImg from '../../assets/img_telefono/inicio_sin clic.png';
 import menuEstuImg from '../../assets/img_telefono/menu_estu.png';
 import menuExpImg from '../../assets/img_telefono/menu_exp.png';
+import menuProyImg from '../../assets/img_telefono/menu_proy.png';
 import menuSobreMiImg from '../../assets/img_telefono/menu_sobre mi.png';
+import { motion } from 'framer-motion';
 import ParagraphMaskAnim from './ParagraphMaskAnim';
 import ParagraphMotion from './ParagraphMotion';
 import ProjectPreview from '../ProjectPreview/ProjectPreview';
 
 const CONTENT_REVEAL_DELAY_MS = 900;
+const PROJECTS_SECTION_ID = 'proyectos';
+const PROJECTS_SCROLL_DURATION_MS = 1600;
+const ABOUT_ME_SCREEN_INDEX = 0;
 
 const timelineData = [
   {
     title: "Desarrolladora Web Full Stack y Diseñadora UX/UI",
     subtitle: "Marca de Accesorios - AleTarica Joyas",
-    description: "Lideré el diseño UX y desarrollo integral de plataformas e-commerce, potenciando la identidad visual de la marca. Desarrollé aplicaciones web internas a medida para escalar la gestión y la productividad empresarial. Optimicé los flujos operativos implementando soluciones backend eficientes con PHP y bases de datos.",
+    description: "Potencié la <strong>identidad de marca</strong> y <strong>productividad empresarial</strong> mediante el diseño de <strong>e-commerce</strong> y el <strong>desarrollo de sistemas internos</strong> optimizados con <strong>PHP y gestión de datos.</strong>",
     tech: "HTML, CSS, JavaScript, PHP, MySQL, Illustrator, Photoshop, After Effects, Figma."
   },
   {
     title: "Diseñadora Gráfica y Textil",
     subtitle: "Fabrica de Merchandising",
-    description: "Gestioné el diseño y las adaptaciones gráficas técnicas para estampado textil e impresión industrial DTF. Garanticé el control de calidad en la producción de merchandising y regalos empresariales, asegurando que cada producto final cumpla con los más altos estándares técnicos y visuales.",
+    description: "Gestioné el <strong>diseño técnico</strong> y <strong>control de calidad</strong> en <strong>estampación textil (DTF)</strong> e <strong>impresión industrial</strong>, asegurando la excelencia visual en <strong>merchandising</strong> y <strong>regalos empresariales</strong>.",
     tech: "Illustrator, Photoshop."
   },
   {
     title: "Diseñadora Multimedia",
     subtitle: "Marca de Accesorios - Cachetona Accesorios",
-    description: "Dirigí la estrategia visual de la marca, abarcando desde la fotografía de producto hasta la edición de video para redes sociales. Creé contenido multimedia de alto impacto que fortaleció la identidad de marca en plataformas digitales.",
-    tech: "Adobe Photoshop, Premiere, After Effects, Fotografía.",
-    glow: true
+    description: "Gestioné la <strong>estrategia visual integral</strong> y <strong>producción de contenido digital</strong>, optimizando la <strong>narrativa de marca</strong> a través de <strong>piezas audiovisuales y fotográficas</strong>.",
+    tech: "Adobe Photoshop, Premiere, After Effects, Fotografía."
   }
 ];
 
@@ -80,50 +69,49 @@ const menuScreens = [
     alt: 'Telefono morado mostrando el menu con Estudios seleccionado',
     title: 'Estudios',
     paragraphs: [
-      'En mi carrera como Diseñadora Multimeida aprendí a conceptualizar y crear identidades de marca desde cero, aplicando diseño gráfico y retoque digital avanzado. Edición de video, motion graphics, modelado y animación 3D y creación de entornos para videojuegos. Programación, gestión de bases de datos, UX/UI y Marketing Digital.',
+      'En mi carrera como <strong>Diseñadora Multimeida</strong> aprendí a conceptualizar y crear identidades de marca desde cero, aplicando <strong>diseño gráfico</strong> y <strong>retoque digital avanzado</strong>. <strong>Edición de video, motion graphics, modelado y animación 3D y creación de entornos para videojuegos.</strong> <strong>Programación, gestión de bases de datos, UX/UI y Marketing Digital.</strong>',
+    ],
+  },
+  {
+    id: 'proyectos',
+    image: menuProyImg,
+    alt: 'Telefono morado mostrando el menu con Proyectos seleccionado',
+    title: 'Proyectos',
+    paragraphs: [
+      'Descubre una selección de proyectos de diseño y desarrollo en la galería de abajo.',
     ],
   },
 ];
 
 const studiesPrograms = [
-  { label: 'Adobe Photoshop', Icon: TbBrandAdobePhotoshop },
-  { label: 'Adobe Illustrator', Icon: TbBrandAdobeIllustrator },
-  { label: 'Adobe After Effects', Icon: TbBrandAdobeAfterEffect },
-  { label: 'Adobe Premiere', Icon: TbBrandAdobePremier },
-  { label: 'Figma', Icon: SiFigma },
-  { label: 'Blender', Icon: SiBlender },
+  { label: 'Adobe Photoshop', icon: 'skill-icons:photoshop' },
+  { label: 'Adobe Illustrator', icon: 'skill-icons:illustrator' },
+  { label: 'Adobe After Effects', icon: 'skill-icons:aftereffects' },
+  { label: 'Adobe Premiere', icon: 'skill-icons:premiere' },
+  { label: 'Figma', icon: 'logos:figma' },
+  { label: 'Blender', icon: 'logos:blender' },
+  { label: 'Unity', icon: 'devicon:unity' },
 ];
 
 const studiesFrameworks = [
-  { label: 'HTML', Icon: SiHtml5 },
-  { label: 'CSS', Icon: SiCss },
-  { label: 'JavaScript', Icon: SiJavascript },
-  { label: 'React', Icon: SiReact },
-  { label: 'PHP', Icon: SiPhp },
-  { label: 'MySQL', Icon: SiMysql },
+  { label: 'HTML', icon: 'devicon:html5' },
+  { label: 'CSS', icon: 'devicon:css3' },
+  { label: 'JavaScript', icon: 'devicon:javascript' },
+  { label: 'React', icon: 'logos:react' },
+  { label: 'C#', icon: 'devicon:csharp' },
+  { label: 'PHP', icon: 'logos:php' },
+  { label: 'MySQL', icon: 'logos:mysql' },
 ];
 
 export default function Main() {
   const sectionRef = useRef(null);
   const parallaxRef = useRef(null);
+  const contentParallaxRef = useRef(null);
+  const projectsScrollAnimationRef = useRef(0);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const isMagicRingsDimmed = isContentVisible;
-
-  const categories = [
-    { id: 'diseno-grafico', label: 'Diseño Gráfico' },
-    { id: 'programacion', label: 'Programación' },
-    { id: '3d', label: '3D' },
-  ];
-
-  const categoryDescriptions = {
-    'diseno-grafico': 'Creo identidades visuales, piezas gráficas y sistemas de diseño que comunican con precisión y generan impacto inmediato.',
-    'programacion': 'Trabajo de forma híbrida entre el diseño y el desarrollo para generar piezas visuales magnéticas y comunicadores potentes.',
-    '3d': 'Modelo y animo entornos y objetos 3D que llevan las ideas al siguiente nivel, desde renders hasta assets para videojuegos.',
-  };
-
-  const [activeCategory, setActiveCategory] = useState('programacion');
 
   const currentScreen =
     selectedMenuIndex === null
@@ -134,8 +122,71 @@ export default function Main() {
       : menuScreens[selectedMenuIndex];
 
   const currentContent = selectedMenuIndex === null ? null : menuScreens[selectedMenuIndex];
+  const isProjectsOptionSelected = currentContent?.id === PROJECTS_SECTION_ID;
+
+  const scrollToProjects = () => {
+    const projectsSection = document.getElementById(PROJECTS_SECTION_ID);
+
+    if (!projectsSection) {
+      return;
+    }
+
+    setSelectedMenuIndex(menuScreens.length - 1);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      projectsSection.scrollIntoView({ behavior: 'auto', block: 'start' });
+      setSelectedMenuIndex(ABOUT_ME_SCREEN_INDEX);
+      return;
+    }
+
+    const startY = window.scrollY;
+    const targetY = window.scrollY + projectsSection.getBoundingClientRect().top;
+    const distanceY = targetY - startY;
+    const duration = PROJECTS_SCROLL_DURATION_MS;
+
+    if (Math.abs(distanceY) < 2) {
+      setSelectedMenuIndex(ABOUT_ME_SCREEN_INDEX);
+      return;
+    }
+
+    if (projectsScrollAnimationRef.current !== 0) {
+      window.cancelAnimationFrame(projectsScrollAnimationRef.current);
+      projectsScrollAnimationRef.current = 0;
+    }
+
+    let startTime = null;
+    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
+
+    const animateScroll = (timestamp) => {
+      if (startTime === null) {
+        startTime = timestamp;
+      }
+
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeInOutCubic(progress);
+      window.scrollTo({ top: startY + (distanceY * easedProgress), behavior: 'auto' });
+
+      if (progress < 1) {
+        projectsScrollAnimationRef.current = window.requestAnimationFrame(animateScroll);
+        return;
+      }
+
+      projectsScrollAnimationRef.current = 0;
+      setSelectedMenuIndex(ABOUT_ME_SCREEN_INDEX);
+    };
+
+    projectsScrollAnimationRef.current = window.requestAnimationFrame(animateScroll);
+  };
 
   const openMenu = () => {
+    if (selectedMenuIndex !== null && menuScreens[selectedMenuIndex]?.id === PROJECTS_SECTION_ID) {
+      scrollToProjects();
+      return;
+    }
+
     setSelectedMenuIndex((currentIndex) => {
       if (currentIndex !== null) {
         return currentIndex;
@@ -209,6 +260,70 @@ export default function Main() {
   }, []);
 
   useEffect(() => {
+    const sectionElement = sectionRef.current;
+
+    if (!sectionElement) {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let animationFrameId = 0;
+
+    const updateContentParallax = () => {
+      animationFrameId = 0;
+      const contentElement = contentParallaxRef.current;
+
+      if (!contentElement) {
+        return;
+      }
+
+      if (reduceMotionQuery.matches) {
+        contentElement.style.setProperty('--content-reveal-y', '0px');
+        return;
+      }
+
+      const rect = sectionElement.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const revealStart = viewportHeight * 0.82;
+      const revealEnd = viewportHeight * 0.08;
+      const revealRange = revealStart - revealEnd;
+      const rawProgress = (revealStart - rect.top) / revealRange;
+      const revealProgress = Math.max(0, Math.min(1, rawProgress));
+      const easedRevealProgress = revealProgress ** 1.5;
+      const revealDistance = mediaQuery.matches ? 200 : 400;
+      const translateY = (1 - easedRevealProgress) * revealDistance;
+
+      contentElement.style.setProperty('--content-reveal-y', `${translateY.toFixed(2)}px`);
+    };
+
+    const requestContentUpdate = () => {
+      if (animationFrameId !== 0) {
+        return;
+      }
+
+      animationFrameId = window.requestAnimationFrame(updateContentParallax);
+    };
+
+    updateContentParallax();
+    window.addEventListener('scroll', requestContentUpdate, { passive: true });
+    window.addEventListener('resize', requestContentUpdate);
+    mediaQuery.addEventListener('change', requestContentUpdate);
+    reduceMotionQuery.addEventListener('change', requestContentUpdate);
+
+    return () => {
+      window.removeEventListener('scroll', requestContentUpdate);
+      window.removeEventListener('resize', requestContentUpdate);
+      mediaQuery.removeEventListener('change', requestContentUpdate);
+      reduceMotionQuery.removeEventListener('change', requestContentUpdate);
+
+      if (animationFrameId !== 0) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (selectedMenuIndex === null || isMenuOpen) {
       return undefined;
     }
@@ -235,6 +350,14 @@ export default function Main() {
       window.clearTimeout(timeoutId);
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (!isMenuOpen || !isProjectsOptionSelected) {
+      return;
+    }
+
+    scrollToProjects();
+  }, [isMenuOpen, isProjectsOptionSelected]);
 
   const moveSelection = (direction) => {
     setSelectedMenuIndex((currentIndex) => {
@@ -326,8 +449,9 @@ export default function Main() {
               </div>
             </div>
           </div>
-          {currentContent && (
+          {currentContent && !isProjectsOptionSelected && (
             <article
+              ref={contentParallaxRef}
               className={`intro-section__content${isContentVisible ? ' intro-section__content--menu-open' : ''}`}
               aria-live={isContentVisible ? 'polite' : undefined}
               aria-hidden={isContentVisible ? undefined : true}
@@ -393,38 +517,36 @@ export default function Main() {
                             >
                               <h3 className="custom-timeline__title neon-text">{item.title}</h3>
                               <h4 className="custom-timeline__subtitle">{item.subtitle}</h4>
-                              <p className="custom-timeline__desc">{item.description}</p>
+                              <p className="custom-timeline__desc" dangerouslySetInnerHTML={{ __html: item.description }} />
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : currentContent.id === 'estudios' ? (
                       <div className="estudios-layout">
+                        <motion.h2
+                          className="custom-timeline__title"
+                          initial={{ opacity: 0, y: 32 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                        >
+                          <a href="https://davinci.edu.ar/carreras/diseno-multimedial" target="_blank" rel="noopener noreferrer" className="estudios-layout__title-link">Diseñadora Multimedia en Escuela DaVinci</a>
+                        </motion.h2>
                         <div className="estudios-description">
-                          <SplitText
+                          <ParagraphMotion
+                            html={currentContent.paragraphs[0]}
                             className="intro-section__paragraph"
-                            text={currentContent.paragraphs[0]}
-                            delay={12}
-                            duration={0.9}
-                            ease="power2.out"
-                            splitType="words"
-                            from={{ opacity: 0, y: 18 }}
-                            to={{ opacity: 1, y: 0 }}
-                            threshold={0}
-                            rootMargin="0px"
-                            textAlign="left"
-                            whiteSpace="normal"
-                            tag="p"
+                            delay={0.2}
                           />
                         </div>
                         <div className="estudios-columns estudios-columns--separated">
                           <div className="estudios-col">
                             <h3 className="custom-timeline__title estudios-col-title">PROGRAMAS</h3>
                             <ul className="estudios-list">
-                              {studiesPrograms.map(({ label, Icon }) => (
+                              {studiesPrograms.map(({ label, icon }) => (
                                 <li key={label} className="estudios-list__item" aria-label={label} title={label}>
                                   <span className="estudios-list__icon" aria-hidden="true">
-                                    <Icon />
+                                    <Icon icon={icon} />
                                   </span>
                                   <span className="estudios-list__label">{label}</span>
                                 </li>
@@ -434,10 +556,10 @@ export default function Main() {
                           <div className="estudios-col">
                             <h3 className="custom-timeline__title estudios-col-title">LENGUAJES</h3>
                             <ul className="estudios-list">
-                              {studiesFrameworks.map(({ label, Icon }) => (
+                              {studiesFrameworks.map(({ label, icon }) => (
                                 <li key={label} className="estudios-list__item" aria-label={label} title={label}>
                                   <span className="estudios-list__icon" aria-hidden="true">
-                                    <Icon />
+                                    <Icon icon={icon} />
                                   </span>
                                   <span className="estudios-list__label">{label}</span>
                                 </li>
@@ -450,12 +572,12 @@ export default function Main() {
                       currentContent.paragraphs.map((paragraph, index) => {
                         if (currentContent.id === 'sobre-mi' && index === 0) {
                           return (
-                            <ParagraphMotion key={`${currentContent.id}-paragraph-motion`} html={paragraph} className="intro-section__paragraph" />
+                            <ParagraphMotion key={`${currentContent.id}-paragraph-motion`} html={paragraph} className="intro-section__paragraph" delay={0.2} />
                           );
                         }
                         if (currentContent.id === 'sobre-mi' && index === 1) {
                           return (
-                            <ParagraphMaskAnim key={`${currentContent.id}-paragraph-mask`} html={paragraph} className="intro-section__paragraph" />
+                            <ParagraphMotion key={`${currentContent.id}-paragraph-mask`} html={paragraph} className="intro-section__paragraph" delay={0.45} />
                           );
                         }
                         return (
@@ -463,6 +585,7 @@ export default function Main() {
                             key={`${currentContent.id}-paragraph-${index}`}
                             className="intro-section__paragraph"
                             text={paragraph}
+                            allowHtml
                             delay={12}
                             duration={0.9}
                             ease="power2.out"
@@ -493,33 +616,6 @@ export default function Main() {
               )}
             </article>
           )}
-        </div>
-      </section>
-      <section className="category-filter-section" aria-label="Filtro de categorías">
-        <div className="category-filter__tabs">
-          {categories.map((cat, index) => (
-            <>
-              {index > 0 && (
-                <span key={`sep-${cat.id}`} className="category-filter__separator" aria-hidden="true">•</span>
-              )}
-              <button
-                key={cat.id}
-                type="button"
-                className={`category-filter__tab${activeCategory === cat.id ? ' category-filter__tab--active' : ''}`}
-                onClick={() => setActiveCategory(cat.id)}
-              >
-                {cat.label}
-              </button>
-            </>
-          ))}
-        </div>
-        <div className="category-filter__text">
-          <p className="category-filter__description">
-            {categoryDescriptions[activeCategory]}
-          </p>
-          <p className="category-filter__tagline">
-            Si el proyecto no genera una reacción inmediata, no es suficiente.
-          </p>
         </div>
       </section>
       <ProjectPreview />
