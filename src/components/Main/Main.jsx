@@ -13,7 +13,7 @@ import menuSobreMiImg from '../../assets/img_telefono/menu_sobre mi.png';
 import { motion } from 'framer-motion';
 import ParagraphMaskAnim from './ParagraphMaskAnim';
 import ParagraphMotion from './ParagraphMotion';
-import ProjectPreview from '../ProjectPreview/ProjectPreview';
+import ProjectPreviewCarousel from '../ProjectPreviewCarousel/ProjectPreviewCarousel';
 
 const CONTENT_REVEAL_DELAY_MS = 900;
 const PROJECTS_SECTION_ID = 'proyectos';
@@ -618,7 +618,9 @@ export default function Main() {
           )}
         </div>
       </section>
-      <ProjectPreview />
+      <div id="proyectos">
+        <ProjectPreviewCarousel />
+      </div>
     </div>
   );
 }

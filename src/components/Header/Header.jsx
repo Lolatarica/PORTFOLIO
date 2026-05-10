@@ -10,7 +10,7 @@ import exclamacionImg from '../../assets/img_header/exclamacion.webp';
 
 const Header = () => {
   return (
-    <header className="main-header">
+    <header id="inicio" className="main-header">
       <div className="header-art" aria-hidden="true">
         <TypingEffect
           className="header-kicker"
