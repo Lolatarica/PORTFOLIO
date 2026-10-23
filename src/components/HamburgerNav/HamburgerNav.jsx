@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import './HamburgerNav.css';
+import { unlockScrollGate } from '../../utils/scrollGate';
 
 const navLinks = [
   { label: 'Inicio',    href: '#inicio' },
+  { label: 'Sobre mí',  href: '#sobre-mi' },
   { label: 'Proyectos', href: '#proyectos' },
   { label: 'Contacto',  href: '#contacto' },
-  { label: 'Blog',      to: '/blog' },
+  // { label: 'Blog',   to: '/blog' }, // oculto hasta que exista el blog
 ];
 
 export default function HamburgerNav() {
@@ -17,6 +19,8 @@ export default function HamburgerNav() {
 
   const handleAnchorClick = (href) => {
     close();
+    // Elegir una sección de más abajo desde el menú pasa la puerta del celular
+    if (href === '#proyectos' || href === '#contacto') unlockScrollGate();
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };

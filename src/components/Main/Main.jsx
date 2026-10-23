@@ -5,20 +5,36 @@ import SplitText from '../SplitText/SplitText';
 import MagicRings from '../MagicRings/MagicRings';
 import holaImg from '../../assets/img_main/hola.webp';
 import decorLoopsImg from '../../assets/img_main/obj2.webp';
-import inicioSinClicImg from '../../assets/img_telefono/inicio_sin clic.png';
-import menuEstuImg from '../../assets/img_telefono/menu_estu.png';
-import menuExpImg from '../../assets/img_telefono/menu_exp.png';
-import menuProyImg from '../../assets/img_telefono/menu_proy.png';
-import menuSobreMiImg from '../../assets/img_telefono/menu_sobre mi.png';
-import { motion } from 'framer-motion';
+import inicioSinClicImg from '../../assets/img_telefono/inicio_sin clic.webp';
+import menuEstuImg from '../../assets/img_telefono/menu_estu.webp';
+import menuExpImg from '../../assets/img_telefono/menu_exp.webp';
+import menuProyImg from '../../assets/img_telefono/menu_proy.webp';
+import menuSobreMiImg from '../../assets/img_telefono/menu_sobre mi.webp';
+import { AnimatePresence, motion } from 'framer-motion';
 import ParagraphMaskAnim from './ParagraphMaskAnim';
 import ParagraphMotion from './ParagraphMotion';
 import ProjectPreviewCarousel from '../ProjectPreviewCarousel/ProjectPreviewCarousel';
+import { SCROLL_GATE_UNLOCK_EVENT } from '../../utils/scrollGate';
 
-const CONTENT_REVEAL_DELAY_MS = 900;
+const CONTENT_REVEAL_DELAY_MS = 650;
 const PROJECTS_SECTION_ID = 'proyectos';
 const PROJECTS_SCROLL_DURATION_MS = 1600;
 const ABOUT_ME_SCREEN_INDEX = 0;
+
+// Puerta del celular: la primera vez, el scroll se frena en el celular y
+// la rueda/teclado recorren su menú hasta llegar a "Proyectos".
+const SCROLL_GATE_MIN_WIDTH = 1101; // en pantallas angostas el scroll queda libre
+const SCROLL_GATE_STEP_MS = 900; // pausa entre un paso del menú y el siguiente
+const SCROLL_GATE_WHEEL_THRESHOLD = 40; // cuánto hay que girar la rueda para avanzar
+const SCROLL_GATE_STORAGE_KEY = 'phone-gate-unlocked';
+
+const readScrollGateUnlocked = () => {
+  try {
+    return sessionStorage.getItem(SCROLL_GATE_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
 
 const timelineData = [
   {
@@ -108,6 +124,8 @@ export default function Main() {
   const parallaxRef = useRef(null);
   const contentParallaxRef = useRef(null);
   const projectsScrollAnimationRef = useRef(0);
+  const scrollGateUnlockedRef = useRef(readScrollGateUnlocked());
+  const latestMenuRef = useRef({});
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
@@ -124,12 +142,23 @@ export default function Main() {
   const currentContent = selectedMenuIndex === null ? null : menuScreens[selectedMenuIndex];
   const isProjectsOptionSelected = currentContent?.id === PROJECTS_SECTION_ID;
 
+  const unlockScrollGate = () => {
+    scrollGateUnlockedRef.current = true;
+    try {
+      sessionStorage.setItem(SCROLL_GATE_STORAGE_KEY, '1');
+    } catch {
+      // sin almacenamiento: se vuelve a bloquear al recargar
+    }
+  };
+
   const scrollToProjects = () => {
     const projectsSection = document.getElementById(PROJECTS_SECTION_ID);
 
     if (!projectsSection) {
       return;
     }
+
+    unlockScrollGate();
 
     setSelectedMenuIndex(menuScreens.length - 1);
 
@@ -225,7 +254,7 @@ export default function Main() {
       const rawProgress = (revealStart - rect.top) / revealRange;
       const revealProgress = Math.max(0, Math.min(1, rawProgress));
       const easedRevealProgress = revealProgress ** 1.5;
-      const revealDistance = mediaQuery.matches ? 320 : 640;
+      const revealDistance = mediaQuery.matches ? 160 : 280;
       const translateY = (1 - easedRevealProgress) * revealDistance;
       const opacity = 0.02 + (easedRevealProgress * 0.98);
 
@@ -291,7 +320,7 @@ export default function Main() {
       const rawProgress = (revealStart - rect.top) / revealRange;
       const revealProgress = Math.max(0, Math.min(1, rawProgress));
       const easedRevealProgress = revealProgress ** 1.5;
-      const revealDistance = mediaQuery.matches ? 200 : 400;
+      const revealDistance = mediaQuery.matches ? 80 : 160;
       const translateY = (1 - easedRevealProgress) * revealDistance;
 
       contentElement.style.setProperty('--content-reveal-y', `${translateY.toFixed(2)}px`);
@@ -379,16 +408,173 @@ export default function Main() {
     });
   };
 
+  // Los listeners de la puerta se registran una vez; leen el estado más nuevo de acá.
+  useEffect(() => {
+    latestMenuRef.current = { selectedMenuIndex, openMenu, moveSelection, unlockScrollGate };
+  });
+
+  useEffect(() => {
+    const sectionElement = sectionRef.current;
+
+    if (!sectionElement) {
+      return undefined;
+    }
+
+    const desktopQuery = window.matchMedia(`(min-width: ${SCROLL_GATE_MIN_WIDTH}px)`);
+    let cooldownUntil = 0;
+    let wheelAccumulated = 0;
+
+    // Si entran con un link directo a proyectos o contacto, no se bloquea
+    if (['#proyectos', '#contacto'].includes(window.location.hash)) {
+      latestMenuRef.current.unlockScrollGate?.();
+    }
+
+    const isGateActive = () => !scrollGateUnlockedRef.current && desktopQuery.matches;
+
+    // Scroll en el que el celular queda centrado en la pantalla
+    const getPinY = () => {
+      const rect = sectionElement.getBoundingClientRect();
+      return window.scrollY + rect.top + ((rect.height - window.innerHeight) / 2);
+    };
+
+    const isAtPin = () => window.scrollY >= getPinY() - 4;
+
+    // Desde "Sobre mí" (o sin abrir) hacia arriba se sale normal
+    const canExitUp = () => {
+      const { selectedMenuIndex: index } = latestMenuRef.current;
+      return index === null || index === 0;
+    };
+
+    const step = (direction) => {
+      const now = performance.now();
+
+      if (now < cooldownUntil) {
+        return;
+      }
+
+      const { selectedMenuIndex: index, openMenu: open, moveSelection: move } = latestMenuRef.current;
+
+      if (direction > 0 && index === null) {
+        open();
+      } else {
+        move(direction);
+      }
+
+      cooldownUntil = now + SCROLL_GATE_STEP_MS;
+    };
+
+    const handleWheel = (event) => {
+      if (!isGateActive() || event.ctrlKey) {
+        return;
+      }
+
+      const direction = Math.sign(event.deltaY);
+
+      if (direction === 0) {
+        return;
+      }
+
+      // Bajando desde el inicio: aterriza justo en el celular
+      if (!isAtPin()) {
+        const pinY = getPinY();
+
+        if (direction > 0 && window.scrollY + event.deltaY > pinY) {
+          event.preventDefault();
+          window.scrollTo({ top: pinY, behavior: 'smooth' });
+        }
+
+        return;
+      }
+
+      if (direction < 0 && canExitUp()) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (Math.sign(wheelAccumulated) !== direction) {
+        wheelAccumulated = 0;
+      }
+
+      wheelAccumulated += event.deltaY;
+
+      if (Math.abs(wheelAccumulated) < SCROLL_GATE_WHEEL_THRESHOLD) {
+        return;
+      }
+
+      wheelAccumulated = 0;
+      step(direction);
+    };
+
+    const handleKeyDown = (event) => {
+      if (!isGateActive() || !isAtPin()) {
+        return;
+      }
+
+      if (event.target.closest?.('input, textarea, select, [contenteditable="true"]')) {
+        return;
+      }
+
+      const isSpace = event.key === ' ';
+
+      // Espacio sobre un botón o link lo activa, no lo tocamos
+      if (isSpace && event.target.closest?.('button, a')) {
+        return;
+      }
+
+      const isDown = event.key === 'ArrowDown' || event.key === 'PageDown' || (isSpace && !event.shiftKey);
+      const isUp = event.key === 'ArrowUp' || event.key === 'PageUp' || (isSpace && event.shiftKey);
+
+      if (!isDown && !isUp) {
+        return;
+      }
+
+      if (isUp && canExitUp()) {
+        return;
+      }
+
+      event.preventDefault();
+      step(isDown ? 1 : -1);
+    };
+
+    // Traba final: ni la barra de scroll ni "Fin" pasan del celular
+    const handleScroll = () => {
+      if (!isGateActive()) {
+        return;
+      }
+
+      const pinY = getPinY();
+
+      if (window.scrollY > pinY + 1) {
+        window.scrollTo({ top: pinY, behavior: 'auto' });
+      }
+    };
+
+    const handleUnlock = () => latestMenuRef.current.unlockScrollGate?.();
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener(SCROLL_GATE_UNLOCK_EVENT, handleUnlock);
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener(SCROLL_GATE_UNLOCK_EVENT, handleUnlock);
+    };
+  }, []);
+
   return (
     <div className="main-container">
-      <section ref={sectionRef} className="intro-section" aria-label="Introduccion del portfolio">
+      <section ref={sectionRef} id="sobre-mi" className="intro-section" aria-label="Introduccion del portfolio">
         <div
           className={`intro-section__rings${isMagicRingsDimmed ? ' intro-section__rings--dimmed' : ''}`}
           aria-hidden="true"
         >
           <MagicRings
-            color="#f8c6ff"
-            colorTwo="#84d8ff"
+            color="#ff8fd0"
+            colorTwo="#ffa25c"
             ringCount={5}
             speed={0.72}
             attenuation={12}
@@ -422,7 +608,9 @@ export default function Main() {
                   alt=""
                 />
               </div>
-              <div className={`intro-section__phone${isMenuOpen ? ' intro-section__phone--menu-open' : ''}`}>
+              <div
+                className={`intro-section__phone${isMenuOpen ? ' intro-section__phone--menu-open' : ''}${selectedMenuIndex === null ? ' intro-section__phone--idle' : ''}`}
+              >
                 <img
                   className="intro-section__image"
                   src={currentScreen.image}
@@ -446,6 +634,9 @@ export default function Main() {
                   onClick={() => moveSelection(1)}
                   aria-label="Mover seleccion hacia abajo"
                 />
+                <span className="intro-section__hint" aria-hidden="true">
+                  Haz clic para iniciar el portfolio
+                </span>
               </div>
             </div>
           </div>
@@ -456,164 +647,170 @@ export default function Main() {
               aria-live={isContentVisible ? 'polite' : undefined}
               aria-hidden={isContentVisible ? undefined : true}
             >
-              {isContentVisible && currentContent.id !== 'experiencia' && currentContent.id !== 'estudios' && (currentContent.titleImage ? (
-                <img
-                  key={`${currentContent.id}-title-image`}
-                  className="intro-section__title-image"
-                  src={currentContent.titleImage}
-                  alt={currentContent.title}
-                />
-              ) : (
-                <SplitText
-                  key={`${currentContent.id}-title`}
-                  className="intro-section__title"
-                  text={currentContent.title}
-                  delay={40}
-                  duration={1.15}
-                  ease="power2.out"
-                  splitType="chars"
-                  from={{ opacity: 0, y: 20 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0}
-                  rootMargin="0px"
-                  textAlign="left"
-                  whiteSpace="normal"
-                  tag="h2"
-                />
-              ))}
-              {isContentVisible && (
-                <>
-                  <div className="intro-section__copy">
-                    {currentContent.id === 'experiencia' ? (
-                      <div className="custom-timeline custom-timeline--animate">
-                        {timelineData.map((item, index) => (
-                          <div className="custom-timeline__item" key={index}>
-                            <div className="custom-timeline__marker">
-                              <svg
-                                className={`custom-timeline__ring custom-timeline__ring--animated ${item.glow ? 'custom-timeline__ring--glow' : ''}`}
-                                style={{ animationDelay: `${0.1 + index * 0.5}s` }}
-                                viewBox="0 0 14 14"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <rect x="4" y="0" width="6" height="2" fill="currentColor"/>
-                                <rect x="2" y="2" width="2" height="2" fill="currentColor"/>
-                                <rect x="10" y="2" width="2" height="2" fill="currentColor"/>
-                                <rect x="0" y="4" width="2" height="6" fill="currentColor"/>
-                                <rect x="12" y="4" width="2" height="6" fill="currentColor"/>
-                                <rect x="2" y="10" width="2" height="2" fill="currentColor"/>
-                                <rect x="10" y="10" width="2" height="2" fill="currentColor"/>
-                                <rect x="4" y="12" width="6" height="2" fill="currentColor"/>
-                              </svg>
-                              {index !== timelineData.length - 1 && (
-                                <div
-                                  className="custom-timeline__line custom-timeline__line--animated"
-                                  style={{ animationDelay: `${0.3 + index * 0.5}s` }}
-                                />
-                              )}
-                            </div>
-                            <div
-                              className="custom-timeline__content custom-timeline__content--animated"
-                              style={{ animationDelay: `${0.3 + index * 0.5}s` }}
-                            >
-                              <h3 className="custom-timeline__title neon-text">{item.title}</h3>
-                              <h4 className="custom-timeline__subtitle">{item.subtitle}</h4>
-                              <p className="custom-timeline__desc" dangerouslySetInnerHTML={{ __html: item.description }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : currentContent.id === 'estudios' ? (
-                      <div className="estudios-layout">
-                        <motion.h2
-                          className="custom-timeline__title"
-                          initial={{ opacity: 0, y: 32 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-                        >
-                          <a href="https://davinci.edu.ar/carreras/diseno-multimedial" target="_blank" rel="noopener noreferrer" className="estudios-layout__title-link">Diseñadora Multimedia en Escuela DaVinci</a>
-                        </motion.h2>
-                        <div className="estudios-description">
-                          <ParagraphMotion
-                            html={currentContent.paragraphs[0]}
-                            className="intro-section__paragraph"
-                            delay={0.2}
-                          />
-                        </div>
-                        <div className="estudios-columns estudios-columns--separated">
-                          <div className="estudios-col">
-                            <h3 className="custom-timeline__title estudios-col-title">PROGRAMAS</h3>
-                            <ul className="estudios-list">
-                              {studiesPrograms.map(({ label, icon }) => (
-                                <li key={label} className="estudios-list__item" aria-label={label} title={label}>
-                                  <span className="estudios-list__icon" aria-hidden="true">
-                                    <Icon icon={icon} />
-                                  </span>
-                                  <span className="estudios-list__label">{label}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div className="estudios-col">
-                            <h3 className="custom-timeline__title estudios-col-title">LENGUAJES</h3>
-                            <ul className="estudios-list">
-                              {studiesFrameworks.map(({ label, icon }) => (
-                                <li key={label} className="estudios-list__item" aria-label={label} title={label}>
-                                  <span className="estudios-list__icon" aria-hidden="true">
-                                    <Icon icon={icon} />
-                                  </span>
-                                  <span className="estudios-list__label">{label}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
+              <AnimatePresence mode="wait">
+                {isContentVisible && (
+                  <motion.div
+                    key={currentContent.id}
+                    exit={{ opacity: 0, y: -14, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.22, ease: [0.4, 0, 1, 1] }}
+                  >
+                    {currentContent.id !== 'experiencia' && currentContent.id !== 'estudios' && (currentContent.titleImage ? (
+                      <img
+                        key={`${currentContent.id}-title-image`}
+                        className="intro-section__title-image"
+                        src={currentContent.titleImage}
+                        alt={currentContent.title}
+                      />
                     ) : (
-                      currentContent.paragraphs.map((paragraph, index) => {
-                        if (currentContent.id === 'sobre-mi' && index === 0) {
+                      <SplitText
+                        key={`${currentContent.id}-title`}
+                        className="intro-section__title"
+                        text={currentContent.title}
+                        delay={40}
+                        duration={1.15}
+                        ease="power2.out"
+                        splitType="chars"
+                        from={{ opacity: 0, y: 20 }}
+                        to={{ opacity: 1, y: 0 }}
+                        threshold={0}
+                        rootMargin="0px"
+                        textAlign="left"
+                        whiteSpace="normal"
+                        tag="h2"
+                      />
+                    ))}
+                    <div className="intro-section__copy">
+                      {currentContent.id === 'experiencia' ? (
+                        <div className="custom-timeline custom-timeline--animate">
+                          {timelineData.map((item, index) => (
+                            <div className="custom-timeline__item" key={index}>
+                              <div className="custom-timeline__marker">
+                                <svg
+                                  className={`custom-timeline__ring custom-timeline__ring--animated ${item.glow ? 'custom-timeline__ring--glow' : ''}`}
+                                  style={{ animationDelay: `${0.1 + index * 0.5}s` }}
+                                  viewBox="0 0 14 14"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <rect x="4" y="0" width="6" height="2" fill="currentColor"/>
+                                  <rect x="2" y="2" width="2" height="2" fill="currentColor"/>
+                                  <rect x="10" y="2" width="2" height="2" fill="currentColor"/>
+                                  <rect x="0" y="4" width="2" height="6" fill="currentColor"/>
+                                  <rect x="12" y="4" width="2" height="6" fill="currentColor"/>
+                                  <rect x="2" y="10" width="2" height="2" fill="currentColor"/>
+                                  <rect x="10" y="10" width="2" height="2" fill="currentColor"/>
+                                  <rect x="4" y="12" width="6" height="2" fill="currentColor"/>
+                                </svg>
+                                {index !== timelineData.length - 1 && (
+                                  <div
+                                    className="custom-timeline__line custom-timeline__line--animated"
+                                    style={{ animationDelay: `${0.3 + index * 0.5}s` }}
+                                  />
+                                )}
+                              </div>
+                              <div
+                                className="custom-timeline__content custom-timeline__content--animated"
+                                style={{ animationDelay: `${0.3 + index * 0.5}s` }}
+                              >
+                                <h3 className="custom-timeline__title neon-text">{item.title}</h3>
+                                <h4 className="custom-timeline__subtitle">{item.subtitle}</h4>
+                                <p className="custom-timeline__desc" dangerouslySetInnerHTML={{ __html: item.description }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : currentContent.id === 'estudios' ? (
+                        <div className="estudios-layout">
+                          <motion.h2
+                            className="custom-timeline__title"
+                            initial={{ opacity: 0, y: 32 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                          >
+                            <a href="https://davinci.edu.ar/carreras/diseno-multimedial" target="_blank" rel="noopener noreferrer" className="estudios-layout__title-link">Diseñadora Multimedia en Escuela DaVinci</a>
+                          </motion.h2>
+                          <div className="estudios-description">
+                            <ParagraphMotion
+                              html={currentContent.paragraphs[0]}
+                              className="intro-section__paragraph"
+                              delay={0.2}
+                            />
+                          </div>
+                          <div className="estudios-columns estudios-columns--separated">
+                            <div className="estudios-col">
+                              <h3 className="custom-timeline__title estudios-col-title">PROGRAMAS</h3>
+                              <ul className="estudios-list">
+                                {studiesPrograms.map(({ label, icon }) => (
+                                  <li key={label} className="estudios-list__item" aria-label={label} title={label}>
+                                    <span className="estudios-list__icon" aria-hidden="true">
+                                      <Icon icon={icon} />
+                                    </span>
+                                    <span className="estudios-list__label">{label}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div className="estudios-col">
+                              <h3 className="custom-timeline__title estudios-col-title">LENGUAJES</h3>
+                              <ul className="estudios-list">
+                                {studiesFrameworks.map(({ label, icon }) => (
+                                  <li key={label} className="estudios-list__item" aria-label={label} title={label}>
+                                    <span className="estudios-list__icon" aria-hidden="true">
+                                      <Icon icon={icon} />
+                                    </span>
+                                    <span className="estudios-list__label">{label}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        currentContent.paragraphs.map((paragraph, index) => {
+                          if (currentContent.id === 'sobre-mi' && index === 0) {
+                            return (
+                              <ParagraphMotion key={`${currentContent.id}-paragraph-motion`} html={paragraph} className="intro-section__paragraph" delay={0.2} />
+                            );
+                          }
+                          if (currentContent.id === 'sobre-mi' && index === 1) {
+                            return (
+                              <ParagraphMotion key={`${currentContent.id}-paragraph-mask`} html={paragraph} className="intro-section__paragraph" delay={0.45} />
+                            );
+                          }
                           return (
-                            <ParagraphMotion key={`${currentContent.id}-paragraph-motion`} html={paragraph} className="intro-section__paragraph" delay={0.2} />
+                            <SplitText
+                              key={`${currentContent.id}-paragraph-${index}`}
+                              className="intro-section__paragraph"
+                              text={paragraph}
+                              allowHtml
+                              delay={12}
+                              duration={0.9}
+                              ease="power2.out"
+                              splitType="words"
+                              from={{ opacity: 0, y: 18 }}
+                              to={{ opacity: 1, y: 0 }}
+                              threshold={0}
+                              rootMargin="0px"
+                              textAlign="left"
+                              whiteSpace="normal"
+                              tag="p"
+                            />
                           );
-                        }
-                        if (currentContent.id === 'sobre-mi' && index === 1) {
-                          return (
-                            <ParagraphMotion key={`${currentContent.id}-paragraph-mask`} html={paragraph} className="intro-section__paragraph" delay={0.45} />
-                          );
-                        }
-                        return (
-                          <SplitText
-                            key={`${currentContent.id}-paragraph-${index}`}
-                            className="intro-section__paragraph"
-                            text={paragraph}
-                            allowHtml
-                            delay={12}
-                            duration={0.9}
-                            ease="power2.out"
-                            splitType="words"
-                            from={{ opacity: 0, y: 18 }}
-                            to={{ opacity: 1, y: 0 }}
-                            threshold={0}
-                            rootMargin="0px"
-                            textAlign="left"
-                            whiteSpace="normal"
-                            tag="p"
-                          />
-                        );
-                      })
-                    )}
-                  </div>
-                  {currentContent.id === 'sobre-mi' && (
-                    <div className="intro-section__actions" aria-label="Acciones principales">
-                      <button type="button" className="intro-section__action-button">
-                        Contactar!
-                      </button>
-                      <button type="button" className="intro-section__action-button">
-                        Descargar CV
-                      </button>
+                        })
+                      )}
                     </div>
-                  )}
-                </>
-              )}
+                    {currentContent.id === 'sobre-mi' && (
+                      <div className="intro-section__actions" aria-label="Acciones principales">
+                        <button type="button" className="intro-section__action-button">
+                          Contactar!
+                        </button>
+                        <button type="button" className="intro-section__action-button">
+                          Descargar CV
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </article>
           )}
         </div>
